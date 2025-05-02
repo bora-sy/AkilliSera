@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SeraBackend.Controllers.DTO;
 using SeraBackend.Greenhouse;
 
 namespace SeraBackend.Controllers
@@ -8,23 +9,30 @@ namespace SeraBackend.Controllers
     [Route("[controller]")]
     public class GreenhouseController(ILogger<GreenhouseController> _logger, GreenhouseService _greenhouse) : ControllerBase
     {
-        [HttpGet("solenoid")]
-        public IActionResult GetSolenoid()
+
+        [HttpGet("")]
+        public IActionResult GreenhouseInfo()
         {
+            Node[] nodes = _greenhouse.GetNodes();
 
-        }
+            List<int> activeNodeIDs = new();
+            List<NodeMoisture[]> moistures = new();
 
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                if (nodes[i] == null || !nodes[i].Connected) continue;
 
-        [HttpGet("test")]
-        public IActionResult Test()
-        {
-            return Ok(_greenhouse.GetNodes());
-        }
+                activeNodeIDs.Add(i);
 
-        [HttpGet("vals")]
-        public IActionResult Test2()
-        {
-            return Ok(_greenhouse.GetNodes()[0].HumidityValues.Last().values[0]);
+                moistures.Add(nodes[i].MoistureValues);
+            }
+
+            return Ok(new GreenhouseData()
+            {
+                ActiveNodeIDs = activeNodeIDs.ToArray(),
+                NodeMoistures = moistures.ToArray()
+            });
+
         }
     }
 }

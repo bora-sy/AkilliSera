@@ -1,4 +1,4 @@
-﻿using SeraBackend.Greenhouse.Models;
+﻿using SeraBackend.Controllers.DTO;
 
 namespace SeraBackend.Greenhouse
 {
@@ -10,9 +10,9 @@ namespace SeraBackend.Greenhouse
 
         public bool Connected => DateTime.Now - LastSeen < TimeSpan.FromMilliseconds(GreenhouseConstants.NODE_TIMEOUT_MS);
 
-        public HumidityValues[] HumidityValues => humidityValues.ToArray();
+        public NodeMoisture[] MoistureValues => moistureValues.ToArray();
         
-        private List<HumidityValues> humidityValues = new();
+        private List<NodeMoisture> moistureValues = new();
 
 
         public Node(int ID)
@@ -21,16 +21,16 @@ namespace SeraBackend.Greenhouse
         }
 
 
-        public void HandleNodeData(int[] humidVals)
+        public void HandleNodeData(int humidVal)
         {
             LastSeen = DateTime.Now;
 
             
-            lock (humidityValues)
+            lock (moistureValues)
             {
-                humidityValues.Add(new(humidVals, DateTime.Now));
+                moistureValues.Add(new(humidVal, DateTime.Now));
 
-                if (humidityValues.Count >= GreenhouseConstants.HUMIDITY_VAL_HISTORY) humidityValues.RemoveAt(0);
+                if (moistureValues.Count >= GreenhouseConstants.HUMIDITY_VAL_HISTORY) moistureValues.RemoveAt(0);
             }
         }
     }

@@ -7,7 +7,7 @@ namespace SeraBackend.Greenhouse
     {
         GreenhouseConfiguration _config;
 
-        List<Node> nodes = new();
+        private List<Node> nodes = new();
 
         public GreenhouseService(IOptions<GreenhouseConfiguration> config)
         {
@@ -20,9 +20,9 @@ namespace SeraBackend.Greenhouse
         }
 
 
-        public void OnNodeData(int nodeID, int[] humidVals)
+        public void OnNodeData(int nodeID, int humidVal)
         {
-            nodes[nodeID].HandleNodeData(humidVals);
+            nodes[nodeID].HandleNodeData(humidVal);
         }
 
         public Node[] GetNodes()

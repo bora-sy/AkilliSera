@@ -13,23 +13,11 @@ namespace SeraBackend.Controllers
 
 
         [HttpPost("nodedata")]
-        public IActionResult NodeData(int NodeID, string humidValsStr)
+        public IActionResult NodeData(int NodeID, int humidVal)
         {
             if (NodeID < 0 || NodeID >= _config.Value.NodeCount) return BadRequest("Incorrect node ID");
 
-            const char humidValSplitter = '-';
-
-            string[] pairs = humidValsStr.Split(humidValSplitter);
-
-            int[] humidVals = new int[pairs.Length];
-
-            for(int i = 0; i < pairs.Length; i++)
-            {
-                if (!int.TryParse(pairs[i], out int humid)) return BadRequest("Malformed humidity values");
-                else humidVals[i] = humid;
-            }
-
-            _greenhouse.OnNodeData(NodeID, humidVals);
+            _greenhouse.OnNodeData(NodeID, humidVal);
 
             return Ok();
             
