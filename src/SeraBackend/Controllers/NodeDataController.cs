@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SeraBackend.Configurations;
 using SeraBackend.Greenhouse;
+using System.Net;
 
 namespace SeraBackend.Controllers
 {
@@ -17,7 +18,12 @@ namespace SeraBackend.Controllers
         {
             if (NodeID < 0 || NodeID >= _config.Value.NodeCount) return BadRequest("Incorrect node ID");
 
-            _greenhouse.OnNodeData(NodeID, humidVal);
+
+            IPAddress? ip = this.Request.HttpContext.Connection.RemoteIpAddress;
+
+            if (ip == null) _logger.LogError($"Failed to get node IP from HttpContext");
+
+            _greenhouse.OnNodeData(NodeID, humidVal, ip);
 
             return Ok();
             

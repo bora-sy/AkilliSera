@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using SeraBackend.Configurations;
+using System.Net;
 
 namespace SeraBackend.Greenhouse
 {
@@ -20,9 +21,9 @@ namespace SeraBackend.Greenhouse
         }
 
 
-        public void OnNodeData(int nodeID, int humidVal)
+        public void OnNodeData(int nodeID, int humidVal, IPAddress? ip)
         {
-            nodes[nodeID].HandleNodeData(humidVal);
+            nodes[nodeID].HandleNodeData(humidVal, ip);
         }
 
         public Node[] GetNodes()
