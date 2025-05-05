@@ -1,8 +1,12 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #include "secret.h"
+
+const int NODE_ID = 0;
+
 
 const String BASE_SERVER_URL = "http://10.134.100.230:3000";
 
@@ -10,9 +14,13 @@ const int DATA_SEND_REPEAT_MS = 1000;
 
 const int WIFI_TIMEOUT = 30000;
 
-const int NODE_ID = 0;
+const int SOLENOID_TIMEOUT = 3000;
+
 const int PIN_SOLENOID = -1;
 const int PIN_MOISTURE_SENSORS[] = {34};
+
+AsyncWebServer localServer(80);
+ulong solenoidTimeout = 0;
 
 enum Sound
 {
@@ -29,7 +37,7 @@ void PlaySound(Sound s)
 
 bool WiFiInit()
 {
-  Serial.println("Connecting to WiFi");
+  Serial.println("Connecting to WiFi...");
   PlaySound(Sound::ConnectingToWifi);
   
   WiFi.mode(wifi_mode_t::WIFI_MODE_STA);
@@ -52,39 +60,33 @@ bool WiFiInit()
   return false;
 }
 
+bool LocalServerInit()
+{
+  Serial.println("Starting local server...");
+
+  localServer.on("/solenoid", HTTP_POST, [](AsyncWebServerRequest* request) {
+    Serial.println("Received REQ on /solenoid");
+    bool state = request->hasParam("state") && request->getParam("state")->value() == "1";
+
+    if(state) solenoidTimeout = millis() + SOLENOID_TIMEOUT;
+    else solenoidTimeout = 0;
+
+    request->send(200, "text/plain", "New State: " + state ? "1" : "0");
+  });
+  
+  Serial.println("Local server started");
+  return true;
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("App begin");
 
-
-  const int relayPin = 25;
-  const int nem1 = 33;
-  const int nem2 = 32;
-
-  pinMode(relayPin, OUTPUT);
-
-  while(true)
-  {
-    int value1= analogRead(nem1);
-    int value2= analogRead(nem2);
-    //Serial.println(String(value1) + " " + String(value2));
-    //delay(200);
-    
-
-    //delay(3000);
-    digitalWrite(relayPin, HIGH);
-    Serial.println("HIGH");
-    delay(2000);
-    digitalWrite(relayPin, LOW);
-    Serial.println("LOW");
-    delay(3000);
-  }
-
-
-
-  return;
+  pinMode(PIN_SOLENOID, OUTPUT);
+  digitalWrite(PIN_SOLENOID, LOW);
 
   if(!WiFiInit()) ESP.restart();
+  if(!LocalServerInit()) ESP.restart(); 
 }
 
 int HTTPPost(const String url) {
@@ -133,11 +135,24 @@ bool SendData()
   return true;
 }
 
+void solenoidCheck()
+{
+  bool solState = millis() < solenoidTimeout;
+
+  digitalWrite(PIN_SOLENOID, solState);
+}
+
 ulong nextDataSend = 0;
-void loop() {
+void dataSendCheck()
+{
   if(nextDataSend < millis())
   {
     bool suc = SendData();
     nextDataSend = millis() + DATA_SEND_REPEAT_MS;
   }
+}
+
+void loop() {
+ solenoidCheck(); 
+ dataSendCheck();
 }
