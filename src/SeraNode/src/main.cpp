@@ -109,17 +109,16 @@ bool SendData()
   Serial.println("Sending data...");
   int moistureLevelCount = sizeof(PIN_MOISTURE_SENSORS)/sizeof(PIN_MOISTURE_SENSORS[0]);
 
-  String moistureLevelString = "";
+  int moistureLevel = 0;
 
   for(int i = 0; i<moistureLevelCount; i++)
   {
-    moistureLevelString += String(GetMoistureLevel(i));
-    
-    if(i != moistureLevelCount-1)
-    moistureLevelString += '-';
+    moistureLevel += GetMoistureLevel(i);
   }
 
-  String url = BASE_SERVER_URL + "/greenhouse/nodedata?NodeID=" + String(NODE_ID) + "&humidValsStr=" + moistureLevelString;
+  moistureLevel /= moistureLevelCount;
+
+  String url = BASE_SERVER_URL + "/greenhouse/nodedata?NodeID=" + String(NODE_ID) + "&humidValsStr=" + String(moistureLevel);
 
   int code = HTTPPost(url);
 
