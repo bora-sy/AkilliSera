@@ -5,7 +5,7 @@
 #include <ESPAsyncWebServer.h>
 #include "secret.h"
 
-const int NODE_ID = 0;
+const int NODE_ID = 1;
 
 
 const String BASE_SERVER_URL = "http://10.134.100.84:3000";

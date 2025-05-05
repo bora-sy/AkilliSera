@@ -23,7 +23,14 @@ namespace SeraBackend.Controllers
 
             if (ip == null) _logger.LogError($"Failed to get node IP from HttpContext");
 
-            _greenhouse.OnNodeData(NodeID, moistureval, ip);
+
+            double max = 2000.0;
+
+            double newVal = ((4096 - moistureval) / max) * 100.0;
+
+            newVal = newVal < 0 ? 0 : newVal > 100 ? 100 : newVal;
+
+            _greenhouse.OnNodeData(NodeID, (int)newVal, ip);
 
             return Ok();
             
