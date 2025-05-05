@@ -26,6 +26,11 @@ namespace SeraBackend.Greenhouse
             nodes[nodeID].HandleNodeData(humidVal, ip);
         }
 
+        public async Task<bool> SetNodeSolenoidState(int nodeID, bool solenoidState)
+        {
+            return await nodes[nodeID].SetSolenoidStateAsync(solenoidState);
+        }
+
         public Node[] GetNodes()
         {
             return nodes.ToArray();

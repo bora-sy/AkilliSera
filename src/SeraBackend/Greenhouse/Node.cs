@@ -14,18 +14,39 @@ namespace SeraBackend.Greenhouse
         public NodeMoisture[] MoistureValues => moistureValues.ToArray();
 
         public IPAddress? IP { get; private set; } = null;
-        
+
+        public bool SolenoidState { get; private set; } = false;
+
         private List<NodeMoisture> moistureValues = new();
 
 
         public Node(int ID)
         {
             this.ID = ID;
+            Task.Run(SolenoidLoopAsync);
         }
 
         private string? GetSolenoidEndpoint(bool soleneoidState) => IP == null ? null : $"http://{IP}:{GreenhouseConstants.NODE_PORT}{GreenhouseConstants.NODE_SOLENOID_PATH}?state={(soleneoidState ? "1" : "0")}";
         
-        public async Task<bool> SetSolenoidAsync(bool state)
+
+        private async Task SolenoidLoopAsync()
+        {
+
+            while (true)
+            {
+                try
+                {
+                    await SendSolenoidStateAsync(SolenoidState);
+                    await Task.Delay(1800);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
+
+        private async Task<bool> SendSolenoidStateAsync(bool state)
         {
             string? url = GetSolenoidEndpoint(state);
             if (url == null) return false;
@@ -45,6 +66,11 @@ namespace SeraBackend.Greenhouse
             }
         }
         
+        public async Task<bool> SetSolenoidStateAsync(bool state)
+        {
+            SolenoidState = state;
+            return await SendSolenoidStateAsync(state);
+        }
         
         public void HandleNodeData(int humidVal, IPAddress? ip)
         {
