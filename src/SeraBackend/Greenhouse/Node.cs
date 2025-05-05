@@ -75,6 +75,7 @@ namespace SeraBackend.Greenhouse
         public void HandleNodeData(int humidVal, IPAddress? ip)
         {
             LastSeen = DateTime.Now;
+            if (ip != null) this.IP = ip;
 
             
             lock (moistureValues)

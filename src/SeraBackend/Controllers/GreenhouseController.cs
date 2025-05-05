@@ -36,9 +36,9 @@ namespace SeraBackend.Controllers
         }
 
         [HttpPost("solenoid")]
-        public async Task<IActionResult> SetSolenoid(int nodeID, bool state)
+        public async Task<IActionResult> SetSolenoid(int nodeID, int state)
         {
-            bool res = await _greenhouse.SetNodeSolenoidState(nodeID, state);
+            bool res = await _greenhouse.SetNodeSolenoidState(nodeID, state == 1);
 
             if (res) return Ok();
 

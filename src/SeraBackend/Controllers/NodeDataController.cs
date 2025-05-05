@@ -14,7 +14,7 @@ namespace SeraBackend.Controllers
 
 
         [HttpPost("nodedata")]
-        public IActionResult NodeData(int NodeID, int humidVal)
+        public IActionResult NodeData(int NodeID, int moistureval)
         {
             if (NodeID < 0 || NodeID >= _config.Value.NodeCount) return BadRequest("Incorrect node ID");
 
@@ -23,7 +23,7 @@ namespace SeraBackend.Controllers
 
             if (ip == null) _logger.LogError($"Failed to get node IP from HttpContext");
 
-            _greenhouse.OnNodeData(NodeID, humidVal, ip);
+            _greenhouse.OnNodeData(NodeID, moistureval, ip);
 
             return Ok();
             

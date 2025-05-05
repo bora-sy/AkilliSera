@@ -8,7 +8,7 @@
 const int NODE_ID = 0;
 
 
-const String BASE_SERVER_URL = "http://10.134.100.230:3000";
+const String BASE_SERVER_URL = "http://10.134.100.84:3000";
 
 const int DATA_SEND_REPEAT_MS = 1000;
 
@@ -16,11 +16,13 @@ const int WIFI_TIMEOUT = 30000;
 
 const int SOLENOID_TIMEOUT = 3000;
 
-const int PIN_SOLENOID = -1;
-const int PIN_MOISTURE_SENSORS[] = {34};
+const int PIN_SOLENOID = 25;
+const int PIN_MOISTURE_SENSORS[] = {32,33};
 
 AsyncWebServer localServer(80);
 ulong solenoidTimeout = 0;
+
+void solenoidCheck();
 
 enum Sound
 {
@@ -64,12 +66,16 @@ bool LocalServerInit()
 {
   Serial.println("Starting local server...");
 
+  localServer.begin();
+
   localServer.on("/solenoid", HTTP_POST, [](AsyncWebServerRequest* request) {
     Serial.println("Received REQ on /solenoid");
     bool state = request->hasParam("state") && request->getParam("state")->value() == "1";
 
     if(state) solenoidTimeout = millis() + SOLENOID_TIMEOUT;
     else solenoidTimeout = 0;
+
+    solenoidCheck();
 
     request->send(200, "text/plain", "New State: " + state ? "1" : "0");
   });
@@ -83,7 +89,7 @@ void setup() {
   Serial.println("App begin");
 
   pinMode(PIN_SOLENOID, OUTPUT);
-  digitalWrite(PIN_SOLENOID, LOW);
+  digitalWrite(PIN_SOLENOID, HIGH);
 
   if(!WiFiInit()) ESP.restart();
   if(!LocalServerInit()) ESP.restart(); 
@@ -120,7 +126,9 @@ bool SendData()
 
   moistureLevel /= moistureLevelCount;
 
-  String url = BASE_SERVER_URL + "/greenhouse/nodedata?NodeID=" + String(NODE_ID) + "&humidValsStr=" + String(moistureLevel);
+  Serial.println(moistureLevel);
+
+  String url = BASE_SERVER_URL + "/nodedata/nodedata?NodeID=" + String(NODE_ID) + "&moistureval=" + String(moistureLevel);
 
   int code = HTTPPost(url);
 
@@ -139,7 +147,7 @@ void solenoidCheck()
 {
   bool solState = millis() < solenoidTimeout;
 
-  digitalWrite(PIN_SOLENOID, solState);
+  digitalWrite(PIN_SOLENOID, !solState);
 }
 
 ulong nextDataSend = 0;
@@ -153,6 +161,7 @@ void dataSendCheck()
 }
 
 void loop() {
+
  solenoidCheck(); 
  dataSendCheck();
 }
