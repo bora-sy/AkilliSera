@@ -67,19 +67,17 @@ void setup() {
   {
     int value1= analogRead(nem1);
     int value2= analogRead(nem2);
-    Serial.println(String(value1) + " " + String(value2));
-    delay(200);
+    //Serial.println(String(value1) + " " + String(value2));
+    //delay(200);
     
-    /*
 
-    delay(3000);
+    //delay(3000);
     digitalWrite(relayPin, HIGH);
     Serial.println("HIGH");
     delay(2000);
     digitalWrite(relayPin, LOW);
     Serial.println("LOW");
     delay(3000);
-    */
   }
 
 
